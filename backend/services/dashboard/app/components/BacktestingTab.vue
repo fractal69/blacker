@@ -21,6 +21,7 @@ import {
   type ComponentPublicInstance,
 } from "vue";
 import { useBacktestingTabStore } from "~/stores/tabs";
+import type { ChartEvent } from "~/packages/src/core/types";
 import Chart, { type ChartTimeframe } from "~/components/Chart.vue";
 
 const props = defineProps<{
@@ -144,6 +145,18 @@ const updateCharts = async () => {
   }
 };
 
+/**
+ * Handles chart events emitted by a Chart component.
+ *
+ * @param timeframeId - Identifier of the timeframe the chart belongs to.
+ * @param event - Chart event dispatched by the underlying ChartEngine.
+ */
+const onChartEvent = (timeframeId: string, event: ChartEvent) => {
+  if (event.type === "series:params") {
+    console.log(timeframeId, event);
+  }
+};
+
 // -----------------------------------------------------------------------------
 // Store subscription
 // -----------------------------------------------------------------------------
@@ -183,7 +196,12 @@ onUnmounted(() => {
           'chart-wrapper--active': timeframeId === activeTimeframe,
         }"
       >
-        <Chart :key="timeframeId" :ref="(el) => setChartRef(timeframeId, el)" :timeframeId="timeframeId" />
+        <Chart
+          :key="timeframeId"
+          :ref="(el) => setChartRef(timeframeId, el)"
+          :timeframeId="timeframeId"
+          @chart="(event) => onChartEvent(timeframeId, event)"
+        />
       </div>
     </div>
   </div>
