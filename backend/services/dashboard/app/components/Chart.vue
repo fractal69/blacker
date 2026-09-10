@@ -16,7 +16,7 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { createChart } from "@/packages/src/index";
 import type { ChartOptions } from "~/packages/src/core/config";
-import type { AnyChartSeries, ChartEngine } from "~/packages/src/core/types";
+import type { AnyChartSeries, ChartEngine, ChartEvent } from "~/packages/src/core/types";
 import { seriesRegistry, type SeriesId, type SeriesKind } from "~/stores/tabs";
 
 const props = defineProps<{
@@ -87,17 +87,13 @@ const charts = new Set<ChartEngine>();
  * Subscribes to every chart event of a ChartEngine.
  * -------------------------------------------------------------------------
  */
+const emit = defineEmits<{
+  chart: [event: ChartEvent]
+}>();
+
 function _subscribeChart(chart: ChartEngine) {
   chart.subscribe((event) => {
-    if (event.type === "series:params") {
-      console.log(event);
-
-      await editSeries(
-        props.timeframeId,
-        event.params,
-        event.affectsCompute,
-      );
-    }
+    emit("chart", event);
   });
 }
 
