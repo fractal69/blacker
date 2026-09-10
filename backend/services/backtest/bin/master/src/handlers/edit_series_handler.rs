@@ -14,8 +14,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-    engine::engine::Series,
-    master::state::{AppState, MasterState, ReplayStatus},
+    engine::engine::{Series, Timeframe}, master::state::{AppState, MasterState, ReplayStatus},
 };
 use axum::{Json, extract::State, http::StatusCode};
 use serde::{Deserialize, Serialize};
@@ -24,6 +23,7 @@ use std::collections::HashMap;
 use tokio::sync::RwLockWriteGuard;
 use tracing::info;
 
+
 ///
 /// Request payload for editing an existing series.
 ///
@@ -31,13 +31,8 @@ use tracing::info;
 pub struct Request {
     pub timeframe_id: String,
     pub id: String,
-
-    pub kind: String,
-    pub level: u8,
-    pub primary: bool,
     pub overlay: bool,
     pub params: HashMap<String, Value>,
-
     pub affects_compute: bool,
 }
 ///
@@ -71,7 +66,7 @@ pub async fn edit_series_handler(
         );
     }
 
-    let timeframe = match master.engine_state.timeframes.get_mut(&req.timeframe_id) {
+    let timeframe: &mut Timeframe = match master.engine_state.timeframes.get_mut(&req.timeframe_id) {
         Some(t) => t,
         None => {
             return (
@@ -94,42 +89,12 @@ pub async fn edit_series_handler(
         );
     }
 
-    if !req.affects_compute && timeframe.series.get(&req.id).unwrap().kind != req.kind {
-        return (
-            StatusCode::CONFLICT,
-            Json(Response {
-                success: false,
-                message: "Cannot change series kind without affecting compute.".to_string(),
-            }),
-        );
-    }
-
-    if req.primary
-        && timeframe
-            .series
-            .values()
-            .any(|s: &Series| s.primary && s.id != req.id)
-    {
-        return (
-            StatusCode::CONFLICT,
-            Json(Response {
-                success: false,
-                message: format!(
-                    "A primary series already exists in timeframe: {}",
-                    req.timeframe_id
-                ),
-            }),
-        );
-    }
 
     let series: &mut Series = match timeframe.series.get_mut(&req.id) {
         Some(s) => s,
         None => unreachable!(),
     };
 
-    series.kind = req.kind;
-    series.level = req.level;
-    series.primary = req.primary;
     series.overlay = req.overlay;
     series.params = req.params;
 
