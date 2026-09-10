@@ -104,7 +104,7 @@ pub async fn add_timeframe_handler(
                 level: 0,
                 primary: true,
                 overlay: false,
-                params: series_params,                
+                params: series_params,
                 extra: None,
             },
         )]),
