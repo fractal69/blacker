@@ -66,6 +66,16 @@ pub async fn edit_series_handler(
         );
     }
 
+    if master.tick_index != 0 {
+        return (
+            StatusCode::CONFLICT,
+            Json(Response {
+                success: false,
+                message: "Cannot edit series after the backtest has started.".to_string(),
+            }),
+        );
+    }
+
     let timeframe: &mut Timeframe = match master.engine_state.timeframes.get_mut(&req.timeframe_id) {
         Some(t) => t,
         None => {
