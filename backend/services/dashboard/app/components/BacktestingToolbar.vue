@@ -41,6 +41,10 @@ const emit = defineEmits<{
 
 const toast = useToast();
 
+// -----------------------------------------------------------------------------
+// Tab / Store
+// -----------------------------------------------------------------------------
+
 const tabsStore = useTabManager();
 const tab = tabsStore.getTabById(props.tabId);
 const tabStore = useBacktestingTabStore(tab as BacktestingTab);

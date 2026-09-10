@@ -28,6 +28,7 @@ const props = defineProps<{
   tabId: string;
 }>();
 
+const toast = useToast();
 // -----------------------------------------------------------------------------
 // Tab / Store
 // -----------------------------------------------------------------------------
@@ -151,9 +152,33 @@ const updateCharts = async () => {
  * @param timeframeId - Identifier of the timeframe the chart belongs to.
  * @param event - Chart event dispatched by the underlying ChartEngine.
  */
-const onChartEvent = (timeframeId: string, event: ChartEvent) => {
-  if (event.type === "series:params") {
-    console.log(timeframeId, event);
+const onChartEvent = async (timeframeId: string, event: ChartEvent) => {
+  if (event.type !== "series:params") return;
+
+  console.log(event);
+
+  const series =
+    tabStore.globalState.engine_state.timeframes[timeframeId]?.series[
+      event.seriesId
+    ];
+
+  if (!series) {
+    console.warn(`Cannot edit series "${event.seriesId}": not found.`);
+    return;
+  }
+
+  try {
+    await tabStore.editSeries(timeframeId, {
+      ...series,
+      params: event.params,
+    });
+  } catch (err: any) {
+    toast.add({
+      title: "Error editing series",
+      description: err.data.message,
+      icon: "i-lucide-circle-x",
+      color: "error",
+    });
   }
 };
 
@@ -184,8 +209,6 @@ onUnmounted(() => {
       :active-timeframe="activeTimeframe"
       @update:timeframe="activeTimeframe = $event"
     />
-
-
 
     <div class="charts">
       <div

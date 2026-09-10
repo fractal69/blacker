@@ -193,14 +193,15 @@ export const useBacktestingTabStore = (tab: BacktestingTab) =>
       /**
        * Edit series request.
        */
-      async function editSeries(timeframeId: string, series: Partial<Series>, affectsCompute: boolean) {
+      async function editSeries(timeframeId: string, series: Series) {
         try {
           return await $fetch("/api/backtest/master/edit-series", {
             method: "POST",
             body: {
               timeframe_id: timeframeId,
-              ...series,
-              affects_compute: affectsCompute
+              id: series.id,
+              overlay: series.overlay,
+              params: series.params
             },
           });
         } catch (err: any) {

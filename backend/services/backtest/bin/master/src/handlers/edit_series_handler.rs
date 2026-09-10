@@ -32,8 +32,7 @@ pub struct Request {
     pub timeframe_id: String,
     pub id: String,
     pub overlay: bool,
-    pub params: HashMap<String, Value>,
-    pub affects_compute: bool,
+    pub params: HashMap<String, Value>
 }
 ///
 /// Response returned after attempting to edit a series.
@@ -107,10 +106,6 @@ pub async fn edit_series_handler(
 
     series.overlay = req.overlay;
     series.params = req.params;
-
-    if req.affects_compute {
-        series.extra = None;
-    }
 
     master.config_id = uuid::Uuid::now_v7().to_string();
 
