@@ -47,7 +47,14 @@ class EMA(Series):
             params,
         )
 
-        self.period = int(params.get("period", 55))
+        length = params.get("length", 55)
+
+        # The frontend can send the length either as a plain number
+        # or as a parameter descriptor object carrying the value.
+        if isinstance(length, dict):
+            length = length.get("value", 55)
+
+        self.period = int(length)
 
         if self.period <= 0:
             raise ValueError(
