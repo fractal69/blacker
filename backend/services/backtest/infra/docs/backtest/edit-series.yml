@@ -1,0 +1,32 @@
+info:
+  name: edit-series
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:3002/api/backtest/master/edit-series
+  body:
+    type: json
+    data: |-
+      {
+        "timeframe_id": "1m",
+        "id": "ema-1m-2291624178",
+        "overlay": true,
+        "params": {
+          "label": "EMA 200",
+          "layer": "foreground",
+          "color": "#FFFFFF",
+          "priceTagColor": "#FFFFFF",
+          "period": 200,
+          "lineWidth": 3
+        },
+        "affects_compute": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
