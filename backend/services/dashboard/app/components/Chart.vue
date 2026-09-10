@@ -17,8 +17,11 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import { createChart } from "@/packages/src/index";
 import type { ChartOptions } from "~/packages/src/core/config";
 import type { AnyChartSeries, ChartEngine } from "~/packages/src/core/types";
-
 import { seriesRegistry, type SeriesId, type SeriesKind } from "~/stores/tabs";
+
+const props = defineProps<{
+  timeframeId: string
+}>()
 
 export interface Series {
   id: string;
@@ -81,17 +84,20 @@ const charts = new Set<ChartEngine>();
 
 /**
  * -------------------------------------------------------------------------
- * Removes all series and charts created by this component.
- * -------------------------------------------------------------------------
- */
-/**
- * -------------------------------------------------------------------------
  * Subscribes to every chart event of a ChartEngine.
  * -------------------------------------------------------------------------
  */
 function _subscribeChart(chart: ChartEngine) {
   chart.subscribe((event) => {
-    console.log("[chart-event]", event.type, event);
+    if (event.type === "series:params") {
+      console.log(event);
+
+      await editSeries(
+        props.timeframeId,
+        event.params,
+        event.affectsCompute,
+      );
+    }
   });
 }
 

@@ -181,11 +181,30 @@ export const useBacktestingTabStore = (tab: BacktestingTab) =>
             method: "POST",
             body: {
               timeframe_id: timeframeId,
-              ...series
+              ...series,
             },
           });
         } catch (err: any) {
           console.error("[BacktestingTabStore] Failed to add series:", err);
+          throw err;
+        }
+      }
+
+      /**
+       * Edit series request.
+       */
+      async function editSeries(timeframeId: string, series: Partial<Series>, affectsCompute: boolean) {
+        try {
+          return await $fetch("/api/backtest/master/edit-series", {
+            method: "POST",
+            body: {
+              timeframe_id: timeframeId,
+              ...series,
+              affects_compute: affectsCompute
+            },
+          });
+        } catch (err: any) {
+          console.error("[BacktestingTabStore] Failed to edit series:", err);
           throw err;
         }
       }
@@ -209,6 +228,7 @@ export const useBacktestingTabStore = (tab: BacktestingTab) =>
       function onUnmount() {}
 
       return {
+        editSeries,
         addSeries,
         addTimeframe,
         isExecutionConnected,
