@@ -153,9 +153,9 @@ const updateCharts = async () => {
  * @param event - Chart event dispatched by the underlying ChartEngine.
  */
 const onChartEvent = async (timeframeId: string, event: ChartEvent) => {
-  if (event.type !== "series:params") return;
-
   console.log(event);
+
+  if (event.type !== "series:params") return;
 
   const series =
     tabStore.globalState.engine_state.timeframes[timeframeId]?.series[
