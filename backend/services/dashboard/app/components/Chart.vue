@@ -16,12 +16,16 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { createChart } from "@/packages/src/index";
 import type { ChartOptions } from "~/packages/src/core/config";
-import type { AnyChartSeries, ChartEngine, ChartEvent } from "~/packages/src/core/types";
+import type {
+  AnyChartSeries,
+  ChartEngine,
+  ChartEvent,
+} from "~/packages/src/core/types";
 import { seriesRegistry, type SeriesId, type SeriesKind } from "~/stores/tabs";
 
 const props = defineProps<{
-  timeframeId: string
-}>()
+  timeframeId: string;
+}>();
 
 export interface Series {
   id: string;
@@ -88,7 +92,7 @@ const charts = new Set<ChartEngine>();
  * -------------------------------------------------------------------------
  */
 const emit = defineEmits<{
-  chart: [event: ChartEvent]
+  chart: [event: ChartEvent];
 }>();
 
 function _subscribeChart(chart: ChartEngine) {
@@ -482,6 +486,10 @@ function requiresRecreation(
   }
 
   if (runtime.overlay !== seriesValue.overlay) {
+    return true;
+  }
+
+  if (JSON.stringify(runtime.params) !== JSON.stringify(seriesValue.params)) {
     return true;
   }
 
