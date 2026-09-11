@@ -480,10 +480,6 @@ function requiresRecreation(
     return true;
   }
 
-  if (JSON.stringify(runtime.params) !== JSON.stringify(seriesValue.params)) {
-    return true;
-  }
-
   return false;
 }
 
