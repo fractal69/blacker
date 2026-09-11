@@ -26,7 +26,7 @@ use tracing::info;
 
 ///
 /// Request payload for adding a new series.
-/// 
+///
 #[derive(Debug, Deserialize)]
 pub struct Request {
     pub timeframe_id: String,
@@ -36,11 +36,11 @@ pub struct Request {
     pub level: u8,
     pub primary: bool,
     pub overlay: bool,
-    pub params: HashMap<String, Value>
+    pub params: HashMap<String, Value>,
 }
 ///
 /// Response returned after attempting to add a series.
-/// 
+///
 #[derive(Serialize)]
 pub struct Response {
     pub success: bool,
@@ -48,7 +48,7 @@ pub struct Response {
 }
 ///
 /// Adds a new series to an existing timeframe.
-/// 
+///
 pub async fn add_series_handler(
     State(state): State<AppState>,
     Json(req): Json<Request>,
@@ -75,6 +75,16 @@ pub async fn add_series_handler(
             Json(Response {
                 success: false,
                 message: "Cannot add series while replay is running.".to_string(),
+            }),
+        );
+    }
+
+    if master.tick_index != 0 {
+        return (
+            StatusCode::CONFLICT,
+            Json(Response {
+                success: false,
+                message: "Cannot add series after the backtest has started.".to_string(),
             }),
         );
     }
