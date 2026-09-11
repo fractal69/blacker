@@ -201,11 +201,29 @@ export const useBacktestingTabStore = (tab: BacktestingTab) =>
               timeframe_id: timeframeId,
               id: series.id,
               overlay: series.overlay,
-              params: series.params
+              params: series.params,
             },
           });
         } catch (err: any) {
           console.error("[BacktestingTabStore] Failed to edit series:", err);
+          throw err;
+        }
+      }
+
+      /**
+       * Delete series request.
+       */
+      async function deleteSeries(timeframeId: string, seriesId:string) {
+        try {
+          return await $fetch("/api/backtest/master/delete-series", {
+            method: "POST",
+            body: {
+              timeframe_id: timeframeId,
+              id: seriesId,
+            },
+          });
+        } catch (err: any) {
+          console.error("[BacktestingTabStore] Failed to delete series:", err);
           throw err;
         }
       }
@@ -229,6 +247,7 @@ export const useBacktestingTabStore = (tab: BacktestingTab) =>
       function onUnmount() {}
 
       return {
+        deleteSeries,
         editSeries,
         addSeries,
         addTimeframe,

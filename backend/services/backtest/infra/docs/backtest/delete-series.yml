@@ -1,0 +1,22 @@
+info:
+  name: delete-series
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: http://localhost:3002/api/backtest/master/delete-series
+  body:
+    type: json
+    data: |-
+      {
+        "timeframe_id": "1m",
+        "id": "ema-1m-3229403957"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

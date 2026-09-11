@@ -155,30 +155,43 @@ const updateCharts = async () => {
 const onChartEvent = async (timeframeId: string, event: ChartEvent) => {
   console.log(event);
 
-  if (event.type !== "series:params") return;
-
-  const series =
-    tabStore.globalState.engine_state.timeframes[timeframeId]?.series[
-      event.seriesId
-    ];
-
-  if (!series) {
-    console.warn(`Cannot edit series "${event.seriesId}": not found.`);
-    return;
+  if (event.type === "series:removed") {
+    try {
+      await tabStore.deleteSeries(timeframeId, event.seriesId);
+    } catch (err: any) {
+      toast.add({
+        title: "Error deleting series",
+        description: err.data.message,
+        icon: "i-lucide-circle-x",
+        color: "error",
+      });
+    }
   }
 
-  try {
-    await tabStore.editSeries(timeframeId, {
-      ...series,
-      params: event.params,
-    });
-  } catch (err: any) {
-    toast.add({
-      title: "Error editing series",
-      description: err.data.message,
-      icon: "i-lucide-circle-x",
-      color: "error",
-    });
+  if (event.type === "series:params") {
+    const series =
+      tabStore.globalState.engine_state.timeframes[timeframeId]?.series[
+        event.seriesId
+      ];
+
+    if (!series) {
+      console.warn(`Cannot edit series "${event.seriesId}": not found.`);
+      return;
+    }
+
+    try {
+      await tabStore.editSeries(timeframeId, {
+        ...series,
+        params: event.params,
+      });
+    } catch (err: any) {
+      toast.add({
+        title: "Error editing series",
+        description: err.data.message,
+        icon: "i-lucide-circle-x",
+        color: "error",
+      });
+    }
   }
 };
 
