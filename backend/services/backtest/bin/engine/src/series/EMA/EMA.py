@@ -47,14 +47,14 @@ class EMA(Series):
             params,
         )
 
-        length = params.get("length", 55)
+        period = params.get("period", 55)
 
-        # The frontend can send the length either as a plain number
+        # The frontend can send the period either as a plain number
         # or as a parameter descriptor object carrying the value.
-        if isinstance(length, dict):
-            length = length.get("value", 55)
+        if isinstance(period, dict):
+            period = period.get("value", 55)
 
-        self.period = int(length)
+        self.period = int(period)
 
         if self.period <= 0:
             raise ValueError(

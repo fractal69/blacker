@@ -121,7 +121,7 @@ const seriesData: Series[] = [
       layer: "foreground",
       color: "#FF9800",
       priceTagColor: "#FF9800",
-      length: { value: 55, affectsCompute: true, min: 1, max: 200, step: 1 },
+      period: { value: 55, affectsCompute: true, min: 1, max: 200, step: 1 },
       lineWidth: 1,
     },
     name: "Exponential Moving Average",
