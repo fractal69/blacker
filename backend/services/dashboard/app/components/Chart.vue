@@ -110,7 +110,7 @@ function cleanAllSeries() {
 
   for (const runtime of allSeries.values()) {
     try {
-      runtime.serie.destroy();
+      runtime.serie.destroy({ silent: true });
     } catch {}
   }
 
@@ -425,9 +425,14 @@ function _removeChartArea(runtime: RuntimeSeries) {
 /**
  * -------------------------------------------------------------------------
  * Removes a single runtime series.
+ *
+ * When `silent` is true the `series:removed` event is suppressed,
+ * so no DELETE request is triggered on the backend. Used for internal
+ * reconciliation (series not present in the incoming backend state) and
+ * component unmount cleanup.
  * -------------------------------------------------------------------------
  */
-function _destroySeries(seriesId: SeriesId) {
+function _destroySeries(seriesId: SeriesId, silent = false) {
   const runtime = allSeries.get(seriesId);
 
   if (!runtime) {
@@ -435,7 +440,7 @@ function _destroySeries(seriesId: SeriesId) {
   }
 
   try {
-    runtime.serie.destroy();
+    runtime.serie.destroy({ silent });
   } catch {}
 
   allSeries.delete(seriesId);
@@ -579,7 +584,7 @@ function applyLayout(timeframe: ChartTimeframe) {
   });
 
   for (const seriesId of seriesToRemove) {
-    _destroySeries(seriesId);
+    _destroySeries(seriesId, true);
   }
 
   /**
@@ -611,7 +616,7 @@ function applyLayout(timeframe: ChartTimeframe) {
      * ---------------------------------------------------------------------
      */
     if (requiresRecreation(existing, seriesValue)) {
-      _destroySeries(seriesId);
+      _destroySeries(seriesId, true);
 
       _createRuntimeSeries(seriesId, seriesValue);
 
