@@ -467,10 +467,57 @@ function _destroySeries(seriesId: SeriesId, silent = false) {
 
 /**
  * -------------------------------------------------------------------------
+ * Order-insensitive deep equality.
+ *
+ * Compares JSON-like structures by content, ignoring object key order.
+ * The backend serializes series params through HashMaps whose iteration
+ * order is not stable across messages, so string comparison would
+ * wrongly trigger series recreation on every live-update.
+ * -------------------------------------------------------------------------
+ */
+function _deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (a == null || b == null) {
+    return false;
+  }
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    return a.every((value, index) => _deepEqual(value, b[index]));
+  }
+
+  if (typeof a === "object" && typeof b === "object") {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+
+    if (aKeys.length !== bKeys.length) {
+      return false;
+    }
+
+    return aKeys.every((key) =>
+      _deepEqual(
+        (a as Record<string, unknown>)[key],
+        (b as Record<string, unknown>)[key],
+      ),
+    );
+  }
+
+  return false;
+}
+
+/**
+ * -------------------------------------------------------------------------
  * Determines whether an existing runtime series
  * can be reused.
  *
  * A series must be recreated if its kind or topology changes.
+ * Params are compared by content, ignoring key order.
  * -------------------------------------------------------------------------
  */
 function requiresRecreation(
@@ -489,7 +536,7 @@ function requiresRecreation(
     return true;
   }
 
-  if (JSON.stringify(runtime.params) !== JSON.stringify(seriesValue.params)) {
+  if (!_deepEqual(runtime.params, seriesValue.params)) {
     return true;
   }
 
@@ -677,6 +724,16 @@ function patchData(seriesId: SeriesId, data: any) {
 }
 
 /**
+ * Patches existing series data lazily over time.
+ *
+ * The incoming data is appended in chunks so the chart visibly replays
+ * the bars. Returns a cancel function.
+ */
+function patchDataLazy(seriesId: SeriesId, data: any, intervalMs = 1) {
+  return allSeries.get(seriesId)?.serie.patchDataLazy(data, intervalMs);
+}
+
+/**
  * -------------------------------------------------------------------------
  * Updates the latest live candle/tick.
  * -------------------------------------------------------------------------
@@ -701,6 +758,7 @@ function getSeriesById(seriesId: SeriesId) {
  */
 defineExpose({
   patchData,
+  patchDataLazy,
   getSeriesById,
   applyLayout,
   applyOptions,

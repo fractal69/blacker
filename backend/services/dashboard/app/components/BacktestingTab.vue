@@ -16,6 +16,7 @@
 import {
   computed,
   nextTick,
+  onMounted,
   onUnmounted,
   ref,
   type ComponentPublicInstance,
@@ -101,6 +102,18 @@ const setChartRef = (
 // -----------------------------------------------------------------------------
 
 /**
+ * Series per timeframe that have already received their full initial history.
+ *
+ * Persisted per component instance: on reload the charts are rebuilt empty,
+ * so the first update must fill all bars immediately. Only data arriving
+ * after that is animated lazily.
+ */
+const loadedSeries = new Set<string>();
+
+const loadedKey = (timeframeId: string, seriesId: string) =>
+  `${timeframeId}/${seriesId}`;
+
+/**
  * Rebuilds and updates a chart for a specific timeframe.
  */
 const updateChart = async (timeframeId: string, timeframe: ChartTimeframe) => {
@@ -118,14 +131,32 @@ const updateChart = async (timeframeId: string, timeframe: ChartTimeframe) => {
   //
   await nextTick();
   //
-  // Populate each series with the full authoritative history.
+  // Populate each series.
   //
   for (const [seriesId, series] of Object.entries(timeframe.series)) {
+    const history = series?.history;
+
+    if (!history?.length) continue;
+
     chart.applyOptions(seriesId, {
       legend: tabStore.globalState.symbol + " " + timeframe.id,
     });
 
-    chart.patchData(seriesId, series?.history);
+    const key = loadedKey(timeframeId, seriesId);
+
+    if (loadedSeries.has(key)) {
+      //
+      // Already loaded: animate only the newly arrived bars.
+      //
+      chart.patchDataLazy(seriesId, history);
+    } else {
+      //
+      // First fill after reload: show the full history immediately.
+      //
+      chart.patchData(seriesId, history);
+
+      loadedSeries.add(key);
+    }
   }
 };
 
@@ -202,6 +233,19 @@ const onChartEvent = async (timeframeId: string, event: ChartEvent) => {
 const unsubscribe = tabStore.listeners.subscribe(async (event) => {
   if (event.type !== "live-update") return;
 
+  await updateCharts();
+});
+
+// -----------------------------------------------------------------------------
+// Initial load
+// -----------------------------------------------------------------------------
+
+/**
+ * On mount, paints the charts from the persisted state right away so a
+ * reload shows the full history immediately. Subsequent engine messages
+ * animate only the newly arrived bars.
+ */
+onMounted(async () => {
   await updateCharts();
 });
 
