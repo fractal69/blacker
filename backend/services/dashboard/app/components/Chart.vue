@@ -756,7 +756,7 @@ onBeforeUnmount(() => {
 /* Chrome / Edge / Safari */
 .chart-container::-webkit-scrollbar {
   background: var(--ui-bg-accented);
-  width: 13px;
+  width: 12px;
 }
 
 .chart-container::-webkit-scrollbar-track {
