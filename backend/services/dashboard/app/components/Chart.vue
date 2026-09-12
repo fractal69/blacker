@@ -729,7 +729,7 @@ function patchData(seriesId: SeriesId, data: any) {
  * The incoming data is appended in chunks so the chart visibly replays
  * the bars. Returns a cancel function.
  */
-function patchDataLazy(seriesId: SeriesId, data: any, intervalMs = 1) {
+function patchDataLazy(seriesId: SeriesId, data: any, intervalMs = 25) {
   return allSeries.get(seriesId)?.serie.patchDataLazy(data, intervalMs);
 }
 
