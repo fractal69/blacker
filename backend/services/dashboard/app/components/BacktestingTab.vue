@@ -52,9 +52,12 @@ const _session = useBacktestingSession(props.tabId, tabStore.symbol);
 
 const activeTimeframe = ref("1m");
 
-const timeframeIds = computed(() =>
-  Object.keys(tabStore.globalState.engine_state.timeframes),
-);
+const timeframeIds = computed(() => {
+  const timeframes = tabStore.globalState.engine_state.timeframes;
+  return Object.keys(timeframes).sort(
+    (a, b) => timeframes[a].timeframe_ms - timeframes[b].timeframe_ms,
+  );
+});
 
 // -----------------------------------------------------------------------------
 // Chart.vue instances
